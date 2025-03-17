@@ -1,35 +1,69 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMapEvents,
+} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import "./styles/map.css";
+import L from "leaflet";
+import icon from "leaflet/dist/images/marker-icon.png";
+import AddGardenButton from "./components/AddGardenButton";
+
+var myIcon = L.icon({
+  iconUrl: icon,
+  iconAnchor: [22, 94],
+  popupAnchor: [-3, -76],
+});
+
+L.Marker.prototype.options.icon = myIcon;
+
+// LocationMarker is a component that displays the user's location on the map
+function LocationMarker() {
+  const [position, setPosition] = useState(null);
+  const map = useMapEvents({
+    click() {
+      map.locate();
+    },
+    locationfound(e: any) {
+      setPosition(e.latlng);
+      map.flyTo(e.latlng, map.getZoom());
+    },
+  });
+
+  return position === null ? null : (
+    <Marker position={position}>
+      <Popup>Vous êtes ici</Popup>
+    </Marker>
+  );
+}
 
 function App() {
-  const [count, setCount] = useState(0)
-
+  const handleAddGarden = () => {
+    console.log("Ajouter un jardin");
+  };
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="app-container">
+        <AddGardenButton
+          onClick={handleAddGarden}
+          className="add-garden-button"
+          label="Ajouter un jardin"
+        />
+        <MapContainer
+          center={[43.6112422, 3.8767337]}
+          zoom={13}
+          scrollWheelZoom={true}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <LocationMarker />
+        </MapContainer>
+    </div>
+  );
 }
 
 export default App
