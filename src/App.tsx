@@ -5,6 +5,7 @@ import {
   Marker,
   Popup,
   useMapEvents,
+  LayersControl,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "./styles/map.css";
@@ -49,17 +50,29 @@ function App() {
         <AddGardenButton
           onClick={handleAddGarden}
           className="add-garden-button"
-          label="Ajouter un jardin"
+          label="+ Ajouter mon jardin"
         />
         <MapContainer
           center={[43.6112422, 3.8767337]}
           zoom={13}
           scrollWheelZoom={true}
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+          <LayersControl position="topright">
+            <LayersControl.Overlay name="Marker with popup">
+              <LayersControl.BaseLayer checked name="OSM" >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+              </LayersControl.BaseLayer>
+              <LayersControl.BaseLayer name="Satellite" >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.png"
+                />
+              </LayersControl.BaseLayer>
+            </LayersControl.Overlay>
+          </LayersControl>
           <LocationMarker />
         </MapContainer>
     </div>

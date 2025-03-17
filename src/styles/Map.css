@@ -24,7 +24,7 @@
 }
 .add-garden-button {
     position: absolute;
-    top: 10px;
+    top: 17px;
     right: 10px;
     z-index: 1000;
     padding: 10px 15px;
@@ -38,4 +38,7 @@ h1 {
     color: black;
     font-size: 2.5rem;
     text-align: center;
+}
+.leaflet-top {
+    top: 50px!important;
 }
