@@ -9,9 +9,10 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "./styles/map.css";
+import "./App.css";
 import L from "leaflet";
 import icon from "leaflet/dist/images/marker-icon.png";
-import AddGardenButton from "./components/AddGardenButton";
+import AddGardenButton from "./components/buttons";
 
 var myIcon = L.icon({
   iconUrl: icon,
@@ -49,7 +50,7 @@ function App() {
     <div className="app-container">
         <AddGardenButton
           onClick={handleAddGarden}
-          className="add-garden-button"
+          className="add-garden-button btn-primary"
           label="+ Ajouter mon jardin"
         />
         <MapContainer
