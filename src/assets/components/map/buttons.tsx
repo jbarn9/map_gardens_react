@@ -9,7 +9,7 @@ interface AddButtonProps {
 function AddButton({ onClick, className = '', label = ''}: AddButtonProps) {
   return (
     <button 
-      className={`add-button ${className}`}
+      className={className}
       onClick={onClick}
     >
       {label}

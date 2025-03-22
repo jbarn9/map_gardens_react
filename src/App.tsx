@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SearchBox from "./assets/components/map/searchbox.tsx";
 import {
   MapContainer,
   TileLayer,
@@ -10,16 +11,8 @@ import {
 import "leaflet/dist/leaflet.css";
 import "./styles/map.css";
 import "./App.css";
-import L from "leaflet";
-import icon from "leaflet/dist/images/marker-icon.png";
 import AddButton from "./assets/components/map/buttons.tsx";
-var myIcon = L.icon({
-  iconUrl: icon,
-  iconAnchor: [22, 94],
-  popupAnchor: [-3, -76],
-});
-
-L.Marker.prototype.options.icon = myIcon;
+import './assets/components/constants.tsx'
 
 // LocationMarker is a component that displays the user's location on the map
 function LocationMarker() {
@@ -33,7 +26,7 @@ function LocationMarker() {
       map.flyTo(e.latlng, map.getZoom());
     },
   });
-
+  
   return position === null ? null : (
     <Marker position={position}>
       <Popup>Vous êtes ici</Popup>
@@ -58,33 +51,36 @@ function App() {
   
   return (
     <div className="app-container">
-      <div className="buttons-container">
+      <div className="buttons-container fixed top-4 right-4 z-50 flex gap-2">
       {/* Test if user is logged in */}
         {!isLoggedIn ? (
+        
         <AddButton
           onClick={handleLogin}
-          className="login-button btn btn-neutral"
+          className="btn btn-primary login-button"
           label="Se connecter"
         />
         ):(
+          <>
           <AddButton
             onClick={handleAccount}
-            className="logout-button btn btn-neutral"
+            className="btn btn-warning logout-button"
             label="Se déconnecter"
           />
-        )}
-
-        <AddButton
+          <AddButton
             onClick={handleAddGarden}
-            className="add-garden-button btn btn-neutral"
+            className="btn btn-secondary add-garden-button"
             label="+ Ajouter un jardin"
           />
+          </>
+        )}
       </div>
         <MapContainer
           center={[43.6112422, 3.8767337]}
           zoom={13}
           scrollWheelZoom={true}
         >
+          <SearchBox positionDiv="topleft"/>
           <LayersControl position="topright">
             <LayersControl.Overlay name="Marker with popup">
               <LayersControl.BaseLayer checked name="OSM" >
