@@ -1,5 +1,6 @@
 import { useState } from "react";
 import SearchBox from "./assets/components/map/searchbox.tsx";
+import Login from "./assets/components/register/register.tsx";
 import {
   MapContainer,
   TileLayer,
@@ -9,10 +10,13 @@ import {
   LayersControl,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import "./styles/map.css";
+import "./index.css";
+import "./styles/Map.css";
 import "./App.css";
 import AddButton from "./assets/components/map/buttons.tsx";
 import './assets/components/constants.tsx'
+import GardenList from "./assets/components/map/gardenList.tsx";
+import FormGarden from "./assets/components/map/form/form-garden.tsx";
 
 // LocationMarker is a component that displays the user's location on the map
 function LocationMarker() {
@@ -35,27 +39,30 @@ function LocationMarker() {
 }
 
 function App() {
+  // Simulate user state
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isVisibleGardenForm, setIsVisibleGardenForm] = useState(false);
+  
+  // Buttons reactions
   const handleAddGarden = () => {
-    console.log("Ajouter un jardin");
+    setIsVisibleGardenForm(true);
   };
   const handleLogin = () => {
-    console.log("Se connecter");
-    setIsLoggedIn(true);
+    setIsVisible(true);
   };
   const handleAccount = () => {
     console.log("Mon compte");
     setIsLoggedIn(false);
   };
-  // Simulate user state
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   return (
-    <div className="app-container">
+    <div className="app-container sm:min-h-screen">
       <div className="buttons-container fixed top-4 right-4 z-50 flex gap-2">
       {/* Test if user is logged in */}
         {!isLoggedIn ? (
-        
-        <AddButton
+          
+          <AddButton
           onClick={handleLogin}
           className="btn btn-primary login-button"
           label="Se connecter"
@@ -70,17 +77,24 @@ function App() {
           <AddButton
             onClick={handleAddGarden}
             className="btn btn-secondary add-garden-button"
-            label="+ Ajouter un jardin"
+            label="+ Ajouter son jardin"
           />
           </>
         )}
       </div>
+        {isVisibleGardenForm ? <div className="login-container sm:w-full "> <FormGarden /> </div> : null}
+        <div><GardenList/></div>
+        {/* Map container */}
         <MapContainer
           center={[43.6112422, 3.8767337]}
           zoom={13}
           scrollWheelZoom={true}
         >
+          {/* Login component */}
+          {isVisible ? <div className="login-container"> <Login /> </div> : null}
+          {/* Searchbox component */}
           <SearchBox positionDiv="topleft"/>
+          {/* LayersControl component */}
           <LayersControl position="topright">
             <LayersControl.Overlay name="Marker with popup">
               <LayersControl.BaseLayer checked name="OSM" >

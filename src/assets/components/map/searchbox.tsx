@@ -13,20 +13,20 @@ export default function SearchBox({ positionDiv }: SearchBoxProps) {
   
   useEffect(() => {
     try {
-      // Vérifier si la bibliothèque est correctement chargée
+      // Check if the library is correctly loaded
       if (!L.Control.Geocoder) {
-        console.error("L.Control.Geocoder n'est pas défini");
+        console.error("L.Control.Geocoder is not defined");
         return;
       }
       
-      // Créer le contrôle geocoder
+      // Create geocoder control
       const geocoder = new L.Control.Geocoder({
         position: positionDiv as L.ControlPosition,
         defaultMarkGeocode: true,
-        placeholder: 'Rechercher une adresse...'
+        placeholder: 'Rechercher une adresse...',
       });
       
-      // Ajouter à la carte
+      // Add geocoder to map
       geocoder.addTo(map);
       
       return () => {
