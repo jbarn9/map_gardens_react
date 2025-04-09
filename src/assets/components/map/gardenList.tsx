@@ -39,7 +39,6 @@ const GardenList = () => {
             fetch('http://localhost:3001/gardens/all')
             .then((response) => response.json())
             .then((data) => { 
-                console.log('Data received:', data);
                 setResponse(data.gardens);
             })
             .catch((error) => console.error('Error:', error));
@@ -47,11 +46,11 @@ const GardenList = () => {
     
 
   return (
-    <div className='fixed z-50 carousel max-width gap-2'>
+    <div className='fixed carousel max-width gap-2'>
         {response.length > 0 ? (
             response.map((garden) => (
-            <div className="carousel-item w-1/4">
-                <div className="card image-full shadow-sm">
+            <div className="carousel-item md:w-1/4 sm:w-full">
+                <div className="card bg-base-100 image-full shadow-sm">
                     <figure>
                         <img
                         src="https://www.lhaylesroses.fr/images/3-Cadre-de-vie/developpementdurable/1.jpg"
@@ -72,11 +71,11 @@ const GardenList = () => {
                             </div> 
                         )}
                     </div>
-                    <div className="card-body">
-                        <h2 className="card-title justify-center">{garden.name}</h2>
+                    <div className="card-body align-center">
+                        <h2 className="card-title">{garden.name}</h2>
                         <p className='description'>{garden.description}</p>
                         <p className='email'>{garden.email}</p>
-                        <div className="card-actions justify-end">
+                        <div className="card-actions self-end">
                             <div className='flex justify-between'>
                                 <a><FontAwesomeIcon icon={faPhone}/></a>
                                 <button className="btn btn-primary">Voir</button>

@@ -57,7 +57,7 @@ function App() {
   };
   
   return (
-    <div className="app-container sm:min-h-screen">
+    <div className="app-container">
       <div className="buttons-container fixed top-4 right-4 z-50 flex gap-2">
       {/* Test if user is logged in */}
         {!isLoggedIn ? (
@@ -82,14 +82,15 @@ function App() {
           </>
         )}
       </div>
-        {isVisibleGardenForm ? <div className="login-container sm:w-full "> <FormGarden /> </div> : null}
-        <div><GardenList/></div>
+        {/* Garden list */}
+        <div className="z-1"><GardenList/></div>
         {/* Map container */}
         <MapContainer
           center={[43.6112422, 3.8767337]}
           zoom={13}
           scrollWheelZoom={true}
-        >
+          >
+          {isVisibleGardenForm ? <div className="login-container"> <FormGarden open={isVisibleGardenForm} onClose={() => setIsVisibleGardenForm(false)} children={<></>} /> </div> : null}
           {/* Login component */}
           {isVisible ? <div className="login-container"> <Login /> </div> : null}
           {/* Searchbox component */}

@@ -1,4 +1,4 @@
-import useMultistepForm from "./useMultistepForm";
+import useMultistepForm from "./form/useMultistepForm";
 
 function FormGarden() {
     const { steps, step, back, next, isFirstStep, isLastStep } = useMultistepForm([ <p>Informations générales</p>, <p>Jardin</p>, <p>Identifiants</p> ]);

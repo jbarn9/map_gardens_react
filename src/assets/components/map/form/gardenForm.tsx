@@ -35,7 +35,7 @@ export default function GardenForm() {
                 <span>Nombre total de parcelles</span>
                 <input type="number" id="parcels" className="input input-md" placeholder="Nombre de parcelles en production"/>
             </label>
-            <textarea className="textarea w-100" placeholder="Présentation rapide du jardin"  minLength={10} maxLength={150}></textarea>
+            <textarea className="textarea" placeholder="Présentation rapide du jardin"  minLength={10} maxLength={150}></textarea>
             
         </>
     )
