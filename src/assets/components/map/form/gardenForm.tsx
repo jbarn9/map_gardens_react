@@ -1,4 +1,28 @@
+import { useEffect, useState } from "react";
+interface Networks {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    mentra: string;
+    description: string;
+    logo: string;
+    foundedAt: string;
+    status: string;
+    banner: string;
+    lucrative: string;
+  }
+
 export default function GardenForm() {
+    const [response, setResponse] = useState<Networks[]>([]);
+    useEffect(() => {
+        fetch('http://localhost:3001/networks/all')
+        .then((response) => response.json())
+        .then((data) => { 
+            setResponse(data.networks);
+        })
+        .catch((error) => console.error('Error:', error));
+}, []);
     return (
         <>
             <legend>Informations sur le jardin</legend>
@@ -6,6 +30,15 @@ export default function GardenForm() {
                 <span>Nom du jardin</span>
                 <input type="text" id="name" className="input input-md" placeholder="Nom du jardin"/>
             </label>
+            <fieldset>
+                <legend>Réseau auquel appartient le jardin</legend>
+                <select defaultValue="Choisir un réseau" className="select">
+                    <option value="" disabled selected>Choisir un réseau</option>
+                    {response.map((network) => (
+                        <option value={network.id}>{network.name}</option>
+                    ))}
+                </select>
+            </fieldset>
             <fieldset className="fieldset">
                 <legend className="fieldset-legend">Catégorie de jardin</legend>
                 <select defaultValue="Choisir une catégorie" className="select">

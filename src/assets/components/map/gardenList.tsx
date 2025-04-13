@@ -49,12 +49,12 @@ const GardenList = () => {
     <div className='fixed carousel max-width gap-2'>
         {response.length > 0 ? (
             response.map((garden) => (
-            <div className="carousel-item md:w-1/4 sm:w-full">
-                <div className="card bg-base-100 image-full shadow-sm">
+            <div className="carousel-item md:w-1/4">
+                <div className="card bg-base-100 image-full w-96 shadow-sm">
                     <figure>
                         <img
-                        src="https://www.lhaylesroses.fr/images/3-Cadre-de-vie/developpementdurable/1.jpg"
-                        alt="garden picture" />
+                        src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
+                        alt="Shoes" />
                     </figure>
                     <div className='network-hd'>
                         {/* Display garden network */}
