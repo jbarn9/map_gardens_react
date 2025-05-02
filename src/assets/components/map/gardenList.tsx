@@ -1,39 +1,9 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPhone } from '@fortawesome/free-solid-svg-icons';
+import { Gardens } from '../../../types';
 
-interface Networks {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  mentra: string;
-  description: string;
-  logo: string;
-  foundedAt: string;
-  status: string;
-  banner: string;
-  lucrative: string;
-}
-interface Gardens {
-    id: string;
-    name: string;
-    description: string;
-    status: string;
-    type: string;
-    email: string;
-    phone: string;
-    president: string;
-    trainer: string;
-    founded_At: string;
-    createdAt: string;
-    updatedAt: string;    
-    networks: Networks;
-    networksId: string;
-    adresseId: string;
-    gardenCategoryId: string;
-  }
-const GardenList = () => {
+export default function GardenList() {
     const [response, setResponse] = useState<Gardens[]>([]);
         useEffect(() => {
             fetch('http://localhost:3001/gardens/all')
@@ -46,20 +16,20 @@ const GardenList = () => {
     
 
   return (
-    <div className='fixed carousel max-width gap-2'>
+    <div className='fixed carousel max-width'>
         {response.length > 0 ? (
             response.map((garden) => (
             <div className="carousel-item md:w-1/4">
-                <div className="card bg-base-100 image-full w-96 shadow-sm">
+                <div className="card bg-base-100 image-full w-100 shadow-sm">
                     <figure>
                         <img
-                        src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
-                        alt="Shoes" />
+                            src="https://www.lhaylesroses.fr/images/3-Cadre-de-vie/developpementdurable/1.jpg"
+                            alt="garden picture" />
                     </figure>
                     <div className='network-hd'>
                         {/* Display garden network */}
                         {garden.networks && (
-                            <div key={garden.networks.id}>
+                            <div>
                                 <div className="flex justify-between">
                                     <div >
                                         {garden.networks.name} 
@@ -91,5 +61,3 @@ const GardenList = () => {
     <div/>
 </div>
 )};
-
-export default GardenList;

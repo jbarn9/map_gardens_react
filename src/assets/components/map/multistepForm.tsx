@@ -1,11 +1,10 @@
 import { ReactElement, useState } from "react";
 
-
 export default function FormGarden(steps: ReactElement[]) {
-    const [currentStepIndex, setCurrentStepIndex] = useState(0);
+    const [currentStepIndex, setCurrentStepIndex] = useState(0)
     function next(){
-        setCurrentStepIndex(i => {
-            if(i >= steps.length - 1) return i;
+        setCurrentStepIndex(i => {            
+            if(i >= steps.length-1) return i;
             return i + 1;
         });
     }
@@ -18,6 +17,11 @@ export default function FormGarden(steps: ReactElement[]) {
     function goTo(index: number){
         setCurrentStepIndex(index);
     }
+    // Form data management for each step
+    const [formData, setFormData] = useState<FormData>();
+    function updateFormData(name: string, value: string){
+        setFormData((prev:any) => ({ ...prev, [name]: value }));
+    }
 
     return {
         currentStepIndex,
@@ -28,6 +32,8 @@ export default function FormGarden(steps: ReactElement[]) {
         back,
         isFirstStep: currentStepIndex === 0,
         isLastStep: currentStepIndex === steps.length - 1,
+        formData,
+        updateFormData,
     }
 
 }

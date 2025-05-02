@@ -16,7 +16,7 @@ import "./App.css";
 import AddButton from "./assets/components/map/buttons.tsx";
 import './assets/components/constants.tsx'
 import GardenList from "./assets/components/map/gardenList.tsx";
-import FormGarden from "./assets/components/map/form/form-garden.tsx";
+import FormGardenDrawer from "./assets/components/map/form/formGardenDrawer.tsx";
 
 // LocationMarker is a component that displays the user's location on the map
 function LocationMarker() {
@@ -90,7 +90,7 @@ function App() {
           zoom={13}
           scrollWheelZoom={true}
           >
-          {isVisibleGardenForm ? <div className="login-container"> <FormGarden open={isVisibleGardenForm} onClose={() => setIsVisibleGardenForm(false)} children={<></>} /> </div> : null}
+          {isVisibleGardenForm ? <div className="login-container"> <FormGardenDrawer open={isVisibleGardenForm} onClose={() => setIsVisibleGardenForm(false)} children={<></>} onSubmit={() => {}} setValue={() => {}} /> </div> : null}
           {/* Login component */}
           {isVisible ? <div className="login-container"> <Login /> </div> : null}
           {/* Searchbox component */}
