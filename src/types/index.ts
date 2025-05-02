@@ -29,6 +29,7 @@ export interface Gardens {
   networksId: string;
   adresseId: string;
   gardenCategoryId: string;
+  gardenCategory: GardenCategories;
 } 
 
 export interface GardenCategories {

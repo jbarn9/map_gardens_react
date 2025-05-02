@@ -2,18 +2,14 @@ import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { Gardens } from '../../../types';
+import { gardenServices } from '../../../services/gardenServices';
 
 export default function GardenList() {
     const [response, setResponse] = useState<Gardens[]>([]);
-        useEffect(() => {
-            fetch('http://localhost:3001/gardens/all')
-            .then((response) => response.json())
-            .then((data) => { 
-                setResponse(data.gardens);
-            })
-            .catch((error) => console.error('Error:', error));
-    }, []);
     
+    useEffect(() => {
+        gardenServices.getGardens().then((gardens) => setResponse(gardens));
+    }, []);
 
   return (
     <div className='fixed carousel max-width'>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Input } from "./formInputs";
 import { Networks } from "../../../../types";
 import { GardenCategories } from "../../../../types";
+import { gardenServices } from "../../../../services/gardenServices";
 
 type propType = {
     open: boolean;
@@ -77,19 +78,8 @@ function GardenForm({formData, handleChange, setFormData}: GardenFormProps) {
     const [gardenCategories, setGardenCategories] = useState<GardenCategories[]>([]);
     
     useEffect(() => {
-        fetch('http://localhost:3001/networks/all')
-        .then((response) => response.json())
-        .then((data) => { 
-            setNetworks(data.networks);
-        })
-        .catch((error) => console.error('Error:', error));
-    }, []);
-    useEffect(() => {
-        fetch('http://localhost:3001/garden-categories/all')
-        .then((res) => res.json())
-        .then((data) => { 
-            setGardenCategories(data.gardenCategories);
-        })
+        gardenServices.getNetworks().then((networks) => setNetworks(networks));
+        gardenServices.getGardenCategories().then((gardenCategories) => setGardenCategories(gardenCategories));
     }, []);
     
     return (
@@ -153,18 +143,15 @@ function GardenForm({formData, handleChange, setFormData}: GardenFormProps) {
                     <option value="otherType">Autre</option>
                 </select>
                 <span className="fieldset-label">Obligatoire</span>
-            </fieldset>         
-            <label className="floating-label">
-                <span>Nombre total de parcelles</span>
-                <input 
-                    type="number" 
-                    name="parcels" 
-                    className="input input-md" 
-                    placeholder="Nombre de parcelles en production"
-                    value={formData.parcels}
-                    onChange={(e) => setFormData({ ...formData, parcels: e.target.value })}
-                />
-            </label>
+            </fieldset>     
+            <Input
+                name="parcels"
+                label="Nombre total de parcelles"
+                className="floating-label"
+                type="number"
+                placeholder="Nombre de parcelles en production"
+                onChange={(e) => setFormData({ ...formData, parcels: e.target.value })}
+            />
             <textarea 
                 className="textarea" 
                 placeholder="Présentation rapide du jardin" 
