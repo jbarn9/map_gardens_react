@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPhone } from '@fortawesome/free-solid-svg-icons';
-import { Gardens } from '../../../types';
+import { Gardens } from '../../../types/form.interfaces';
 import { gardenServices } from '../../../services/gardenServices';
 
 export default function GardenList() {

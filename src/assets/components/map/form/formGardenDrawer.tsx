@@ -1,91 +1,48 @@
-import useMultistepForm from "../multistepForm";
 import { Drawer } from 'vaul';
 import { useEffect, useState } from "react";
-import { Input } from "./formInputs";
-import { Networks } from "../../../../types";
-import { GardenCategories } from "../../../../types";
+import useMultistepForm from "../multistepForm";
+import { Input, Inputautocomplete } from "./formInputs";
 import { gardenServices } from "../../../../services/gardenServices";
+import { Networks } from "../../../../types/form.interfaces";
+import { GardenFormProps, GardenCategories, GardenTypes, propType, CoordinatesFormProps } from "../../../../types/form.types";
 
-type propType = {
-    open: boolean;
-    onClose: () => void;
-    children: React.ReactNode;
-    onSubmit: (data: any) => void;
-    setValue: (name: string, value: string | number) => void;
-}
-type CoordonateFormProps = {
-    formData: {
-        address: string;
-        zipCode: string;
-        city: string;
-        country: string;
-        latitude: string;
-        longitude: string;
-    };
-    setFormData: (data: any) => void;
-    handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-};
-
-type GardenFormProps = {
-    formData: {
-        name: string;
-        network: string;
-        category: string;
-        type: string;
-        parcels: number;
-        presentation: string;
-    };
-    handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-    setFormData: (data: any) => void;
-};
-
-
-
-
-function CoordonateForm({formData, handleChange}: CoordonateFormProps) {
+function CoordinatesForm({formData, handleChange, setFormData}: CoordinatesFormProps) { 
     return (
         <>
-        <label className="floating-label">
-            <span>Adresse du jardin</span>
-            <input type="text" id="address" name="address" className="input input-md" placeholder="Adresse du jardin" value={formData.address} onChange={handleChange} />
-        </label>
-        <label className="floating-label">
-            <span>Code postal</span>
-            <input type="text" id="zipCode" name="zipCode" className="input input-md" placeholder="Code postal du jardin" value={formData.zipCode} onChange={handleChange} />
-        </label>
-        <label className="floating-label">
-            <span>Ville</span>
-            <input type="text" id="city" name="city" className="input input-md" placeholder="Ville du jardin" value={formData.city} onChange={handleChange} />
-        </label>
-        <label className="floating-label">
-            <span>Pays</span>
-            <input type="text" id="country" name="country" className="input input-md" placeholder="Pays du jardin" value={formData.country} onChange={handleChange} />
-        </label>
-        <label className="floating-label">
-            <span>Latitude</span>
-            <input type="number" id="latitude" name="latitude" className="input input-md" placeholder="Latitude du jardin" value={formData.latitude} onChange={handleChange} />
-        </label>
-        <label className="floating-label">
-            <span>Longitude</span>
-            <input type="number" id="longitude" name="longitude" className="input input-md" placeholder="Longitude du jardin" value={formData.longitude} onChange={handleChange} />
-        </label>
-        </>
+        <Input name="postcode" label="Code postal" value={formData.postcode} onChange={handleChange} placeholder="Code postal du jardin" type="text" className="floating-label" />
+        <Inputautocomplete 
+                name="label_street"
+                value={formData.label_street}
+                className="floating-label"
+                label="Adresse du jardin"
+                type="text"
+                placeholder="Adresse du jardin"
+                list="street-list"  
+                postcode={formData.postcode}
+            />
+        <Input name="city" label="Ville" placeholder="Ville du jardin" onChange={handleChange} className="floating-label" type="text" value={formData.city}/> 
+        <Input name="country" label="Pays" value={formData.country} onChange={handleChange} placeholder="Pays du jardin" type="text" className="floating-label" />
+        <Input name="lat" label="Latitude" value={formData.coordinates[0]} onChange={handleChange} placeholder="Latitude du jardin" type="float" className="floating-label" />
+        <Input name="Long" label="Longitude" value={formData.coordinates[1]} onChange={handleChange} placeholder="Longitude du jardin" type="float" className="floating-label" />
+        </>     
     )
 }
 
 function GardenForm({formData, handleChange, setFormData}: GardenFormProps) {
     const [networks, setNetworks] = useState<Networks[]>([]);
     const [gardenCategories, setGardenCategories] = useState<GardenCategories[]>([]);
-    
+    const [gardenTypes, setGardenTypes] = useState<GardenTypes[]>([]);
+
+    // fetch data from the server
     useEffect(() => {
         gardenServices.getNetworks().then((networks) => setNetworks(networks));
         gardenServices.getGardenCategories().then((gardenCategories) => setGardenCategories(gardenCategories));
+        gardenServices.getGardenTypes().then((gardenTypes) => setGardenTypes(gardenTypes));
     }, []);
     
     return (
         <>
             <legend>Informations sur le jardin</legend>
-            
             <Input
                 name='name'
                 label="Nom du jardin" 
@@ -133,14 +90,9 @@ function GardenForm({formData, handleChange, setFormData}: GardenFormProps) {
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                 >
                     <option value="" disabled>Choisir un type</option>
-                    <option value="habitation">Jardin partagé d'habitants</option>
-                    <option value="enterprise">Jardin partagé d'entreprise</option>
-                    <option value="flower">Fleurissement partagé</option>
-                    <option value="copropriate">Jardin de copropriété</option>
-                    <option value="insertionPro">Jardin d'insertion professionnelle</option>
-                    <option value="insertionSoc">Jardin d'insertion sociale</option>
-                    <option value="pedagogical">Jardin pédagogique</option>
-                    <option value="otherType">Autre</option>
+                    {gardenTypes.map((type) => (
+                        <option value={type.id} key={type.id}>{type.name}</option>
+                    ))}
                 </select>
                 <span className="fieldset-label">Obligatoire</span>
             </fieldset>     
@@ -155,43 +107,59 @@ function GardenForm({formData, handleChange, setFormData}: GardenFormProps) {
             <textarea 
                 className="textarea" 
                 placeholder="Présentation rapide du jardin" 
-                name="presentation" 
+                name="description" 
                 minLength={10} 
                 maxLength={150}
-                value={formData.presentation}
-                onChange={(e) => setFormData({ ...formData, presentation: e.target.value })}
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             ></textarea>   
-            
         </>
     )
 }
 
 
 const FormGardenDrawer: React.FC<propType> = ({open, onClose}) => {
+    const dataFields = {
+        label_street: "",
+        postcode: "",
+        city: "",
+        country: "",
+        coordinates: []
+    }
+    const [data, setData] = useState(dataFields)
     const [formData, setFormData] = useState({
         name: "",
         network: "",
         category: "",
         type: "",
         parcels: 0,
-        presentation: "",
-        address: "",
-        zipCode: "",
-        city: "",
-        country: "",
-        latitude: "",
-        longitude: "",        
+        description: "",
+        label: "",
+        cityId: "",  
     })
     
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData((prevalue) => {
-            return {
-                ...prevalue,
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        console.log(e.target.value);
+        if (dataFields.hasOwnProperty(e.target.name)) {
+            setData((prev) => ({
+                ...prev,
                 [e.target.name]: e.target.value
-            }      
-        })
+            }));
+        }else{
+            setFormData((prevalue) => {
+                return {
+                    ...prevalue,
+                    [e.target.name]: e.target.value
+                }      
+            })
+        }
     }
-    const { currentStepIndex, step, back, next, isFirstStep, isLastStep} = useMultistepForm([<GardenForm formData={formData} setFormData={setFormData} handleChange={handleChange} />, <CoordonateForm formData={formData} setFormData={setFormData} handleChange={handleChange} />]);
+
+    const { currentStepIndex, step, back, next, isFirstStep, isLastStep} = useMultistepForm(
+        [
+            <GardenForm formData={formData} setFormData={setFormData} handleChange={handleChange} />, 
+            <CoordinatesForm formData={data} setFormData={setData} handleChange={handleChange} />
+        ]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<String | null>(null);

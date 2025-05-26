@@ -36,3 +36,24 @@ export interface GardenCategories {
   id: string;
   name: string;
 }
+
+export interface Address {
+    label: string;
+    postcode: string;
+    city: string;
+    country: string;
+    lat: number;
+    lon: number;
+}
+
+export interface InputautocompleteProps {
+  name: string;
+  value: string;
+  className: string;
+  label: string;
+  type: string;
+  placeholder: string;
+  list: string;
+  postcode: string;
+}
+
