@@ -63,19 +63,37 @@ export const gardenServices = {
 
     searchAddress: async (query: string, postcode: string) => {
         try {
-            const response = await fetch(`http://localhost:3001/address/search?q=${encodeURIComponent(query)}&postcode=${postcode}`);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
+            const response = await fetch(`http://localhost:3001/address/search?q=${encodeURIComponent(query)}&postcode=${postcode}&limit=5`);
             const data = await response.json();     
             console.log('Données reçues:', data); // Debug
 
             if (data && data.length > 0) {
                 // Prendre la première adresse
                 const newCoordinates = data.map((address: Address) => ({
-                    label: address.label,
+                    street: address.street,
                     postcode: address.postcode,
                     city: address.city,
+                    country: address.country,
+                    lat: address.lat,
+                    lon: address.lon
+                }));
+                return newCoordinates;
+            }
+            return null;
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    },
+
+    searchPostalCode : async (postcode: string) => {
+        try {
+            const response = await fetch(`http://localhost:3001/address/searchByPostcode?q=${encodeURIComponent(postcode)}&limit=2`);
+            const data = await response.json();
+            console.log('Données reçues:', data); // Debug
+            if(data && data.length > 0){
+                const newCoordinates = data.map((address:Address) =>({
+                    postcode : address.postcode,
+                    city : address.city,
                     country: address.country,
                     lat: address.lat,
                     lon: address.lon

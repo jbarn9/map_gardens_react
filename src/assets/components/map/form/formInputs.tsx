@@ -1,7 +1,6 @@
 import { HTMLInputTypeAttribute, useEffect, useState } from "react"
 import { InputautocompleteProps, Address } from "../../../../types/form.interfaces";
 import { gardenServices } from "../../../../services/gardenServices";
-import { set } from "zod";
 
 
 export function Input({ name, label, className, type, placeholder, value, onChange }: { name: string, label: string, className: string, type: HTMLInputTypeAttribute, placeholder?: string, value?: string, onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
@@ -25,33 +24,6 @@ export function Select({ options, name, ...rest }: {  options: string[], name: s
     )
 }
 
-export function InputPostcode({ name, label, className, type, placeholder, value, onChange }: { name: string, label: string, className: string, type: HTMLInputTypeAttribute, placeholder?: string, value?: string, onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
-    const [inputValue, setInputValue] = useState(value);
-    const [postcode, setPostcode] = useState(value);
-    const [city, setCity] = useState(value);
-    const [lat, setLat] = useState(value);
-    const [lon, setLon] = useState(value);
-
-    useEffect(() => {
-        try {
-            // fetch address from the server when value changes
-            const fetchAddress = async () => {
-                await gardenServices.searchAddress(inputValue, postcode).then((coordinatesValue) => {
-                    setPostcode(coordinatesValue.postcode);
-                    setCity(coordinatesValue.city);
-                    setLat(coordinatesValue.lat);
-                    setLon(coordinatesValue.lon);
-                });
-                console.log('coordinatesValue', coordinatesValue);
-            }
-            fetchAddress();
-        } catch (error) {
-            console.error('Erreur dans le contrôleur:', error);
-            throw error;
-        }
-    }, [inputValue])
-}
-
 export function Inputautocomplete({ 
     name,
     value,
@@ -64,14 +36,13 @@ export function Inputautocomplete({
     const [coordinatesValue, setCoordinatesValue] = useState<Address[] | null>(null);    
     const [inputValue, setInputValue] = useState(value);
 
+    // fetch address from the server when value changes
     useEffect(() => {
         try {
-            // fetch address from the server when value changes
             const fetchAddress = async () => {
                 await gardenServices.searchAddress(inputValue, postcode).then((coordinatesValue) => {
                     setCoordinatesValue(coordinatesValue);
                 });
-                console.log('coordinatesValue', coordinatesValue);
             }
             fetchAddress();
         } catch (error) {
@@ -106,7 +77,7 @@ export function Inputautocomplete({
                 {coordinatesValue && coordinatesValue.length > 0 && (
                     <ul id={list} role="listbox" style={{width: 'auto', height: '200px', overflow: 'auto'}}>
                         {coordinatesValue.map((stt: Address, index: number) => (
-                            <li key={index} onClick={() => handleSuggestionClick(stt)} role="option">{stt.label}</li>
+                            <li key={index} onClick={() => handleSuggestionClick(stt)} role="option">{stt.street}</li>
                         ))}
                     </ul> 
                 )}

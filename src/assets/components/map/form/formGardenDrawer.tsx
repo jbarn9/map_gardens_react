@@ -3,14 +3,72 @@ import { useEffect, useState } from "react";
 import useMultistepForm from "../multistepForm";
 import { Input, Inputautocomplete } from "./formInputs";
 import { gardenServices } from "../../../../services/gardenServices";
-import { Networks } from "../../../../types/form.interfaces";
+import { Address, Networks } from "../../../../types/form.interfaces";
 import { GardenFormProps, GardenCategories, GardenTypes, propType, CoordinatesFormProps } from "../../../../types/form.types";
 
 function CoordinatesForm({formData, handleChange, setFormData}: CoordinatesFormProps) { 
+    const [inputValue, setInputValue] = useState(formData.postcode);
+    const [open, setOpen] = useState(false);
+    const [coordinatesValue, setCoordinatesValue] = useState<Address[] | null>(null);
+    const [city, setCity] = useState(formData.city);
+    const [country, setCountry] = useState(formData.country);
+    const [lat, setLat] = useState(formData.coordinates[0]);
+    const [lon, setLon] = useState(formData.coordinates[1]);
+    
+    useEffect(() => {
+        try {
+            // fetch address from the server when value changes
+            const fetchAddress = async () => {
+                await gardenServices.searchPostalCode(inputValue).then((coordinatesValue) => {
+                    setCoordinatesValue(coordinatesValue);
+                });
+                if (coordinatesValue && coordinatesValue.length > 0) {
+                    setOpen(true);
+                }
+            }
+            fetchAddress();
+        } catch (error) {
+            console.error('Erreur dans le contrôleur:', error);
+            throw error;
+        }
+    }, [inputValue])
+    
+    const handleSuggestionClick = (value: any) => { 
+        console.log(value);
+        setCity(value.city);
+        setLat(value.lat);
+        setLon(value.lon);
+        setCountry('France');
+        setOpen(false);
+    };
+
     return (
         <>
-        <Input name="postcode" label="Code postal" value={formData.postcode} onChange={handleChange} placeholder="Code postal du jardin" type="text" className="floating-label" />
-        <Inputautocomplete 
+        <label htmlFor="postcode" className="floating-label">
+            <span>Code postal</span>
+        </label>
+        <div className="input-container">
+            <input 
+                type="text"
+                name="postcode"
+                id="postcode"
+                className="input"
+                placeholder="Code postal"
+                value={inputValue}                                  
+                aria-autocomplete="list"
+                aria-controls="postcode-list"
+                list="postcode-list"
+                onChange={(e) => setInputValue(e.target.value)}
+            />
+            {coordinatesValue && coordinatesValue.length > 0 && (
+                <ul id="postcode-list" role="listbox" style={{width: 'clamp(3rem, 20rem, 100%)', height: 'fit-content', overflow: 'auto', padding: '10px', backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '4px', display: open ? 'block' : 'none'}}>
+                    {coordinatesValue.map((cityValue: Address, index: number) => (
+                        <li key={index} onClick={() => handleSuggestionClick(cityValue)} role="option">{cityValue.city} - France</li>
+                    ))}
+                </ul> 
+            )}
+        </div>
+       <Inputautocomplete 
                 name="label_street"
                 value={formData.label_street}
                 className="floating-label"
@@ -20,10 +78,10 @@ function CoordinatesForm({formData, handleChange, setFormData}: CoordinatesFormP
                 list="street-list"  
                 postcode={formData.postcode}
             />
-        <Input name="city" label="Ville" placeholder="Ville du jardin" onChange={handleChange} className="floating-label" type="text" value={formData.city}/> 
-        <Input name="country" label="Pays" value={formData.country} onChange={handleChange} placeholder="Pays du jardin" type="text" className="floating-label" />
-        <Input name="lat" label="Latitude" value={formData.coordinates[0]} onChange={handleChange} placeholder="Latitude du jardin" type="float" className="floating-label" />
-        <Input name="Long" label="Longitude" value={formData.coordinates[1]} onChange={handleChange} placeholder="Longitude du jardin" type="float" className="floating-label" />
+        <Input name="city" label="Ville" placeholder="Ville du jardin" onChange={handleChange} className="floating-label" type="text" value={city}/> 
+        <Input name="country" label="Pays" value={country} onChange={handleChange} placeholder="Pays du jardin" type="text" className="floating-label" />
+        <Input name="lat" label="Latitude" value={lat} onChange={handleChange} placeholder="Latitude du jardin" type="float" className="floating-label" />
+        <Input name="Long" label="Longitude" value={lon} onChange={handleChange} placeholder="Longitude du jardin" type="float" className="floating-label" />
         </>     
     )
 }
