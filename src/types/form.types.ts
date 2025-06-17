@@ -4,6 +4,7 @@ export type propType = {
     children: React.ReactNode;
     onSubmit: (data: any) => void;
     setValue: (name: string, value: string | number) => void;
+    onCoordinatesChange: (coordinates:{lat:number, lon:number}) => void;
 }
 
 export type GardenFormProps = {
@@ -39,8 +40,14 @@ export type CoordinatesFormProps = {
       postcode: string;
       city: string;
       country: string;
-      coordinates: string[];
+      coordinates: Coordinates;
     };
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     setFormData: (data: any) => void;
+    onCoordinatesChange: (coordinates:Coordinates) => void;
+  };
+
+  export type Coordinates = {
+    lat: number;
+    lon: number;
   };

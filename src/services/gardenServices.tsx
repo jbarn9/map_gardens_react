@@ -70,10 +70,9 @@ export const gardenServices = {
             if (data && data.length > 0) {
                 // Prendre la première adresse
                 const newCoordinates = data.map((address: Address) => ({
-                    street: address.street,
+                    name: address.name,
+                    label: address.label,
                     postcode: address.postcode,
-                    city: address.city,
-                    country: address.country,
                     lat: address.lat,
                     lon: address.lon
                 }));
@@ -94,9 +93,6 @@ export const gardenServices = {
                 const newCoordinates = data.map((address:Address) =>({
                     postcode : address.postcode,
                     city : address.city,
-                    country: address.country,
-                    lat: address.lat,
-                    lon: address.lon
                 }));
                 return newCoordinates;
             }

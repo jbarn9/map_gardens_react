@@ -38,7 +38,8 @@ export interface GardenCategories {
 }
 
 export interface Address {
-    street: string;
+    name: string;
+    label: string;
     postcode: string;
     city: string;
     country: string;
