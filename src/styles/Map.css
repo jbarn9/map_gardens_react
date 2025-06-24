@@ -5,6 +5,48 @@
     min-height: 100vh;
     font-family: Arial, sans-serif;
     width: 100%;
+    z-index: 0;
+}
+
+/*
+*****
+***** carousel 
+*****
+*/
+.carousel{
+    bottom: 12px;
+    z-index: 1000;
+    left: .5em;
+    right: .5em;
+}
+.network-hd {
+    height: 40px;
+    z-index: 1200;
+    background-color: var(--color-primary);
+    align-content: center;
+    color: var(--color-base-100);
+    font-size: 1.1rem;
+    font-weight: bolder;
+    padding-left: 10px;
+}
+.card-body {
+    display: flex;
+    flex: auto;
+    flex-direction: column;
+    gap: calc(0.25rem * 2);
+    padding: var(--card-p, 1.5rem);
+    font-size: var(--card-fs, 1.1rem);
+    padding-top: 50px;
+    font-weight: bolder;
+}
+.card-title{
+    font-size: var(--card-fs, 1.3rem) ;
+}
+.card::before {
+    background-color: rgba(0, 0, 0, 0.7)!important;
+}
+.d-none{
+    display: none;
 }
 .app-container {
     width: 100%;
@@ -22,18 +64,16 @@
     height: 1500px; 
     z-index: 0;
 }
-.add-garden-button {
-    position: absolute;
+.add-button, .login-button, .logout-button {
     top: 17px;
     right: 10px;
     z-index: 1000;
-    padding: 10px 15px;
-    background-color: white;
-    border: none;
-    border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     cursor: pointer;
 }
+.login-button, .logout-button {
+    right: 145px;
+}
+
 h1 {
     color: black;
     font-size: 2.5rem;
@@ -41,4 +81,16 @@ h1 {
 }
 .leaflet-top {
     top: 50px!important;
+}
+.searchbox-container {
+    position: absolute;
+    left: 50px;
+    z-index: 1000;
+}
+.login-container{
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1500;
 }

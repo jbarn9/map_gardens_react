@@ -1,64 +1,104 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import SearchBox from "./assets/components/map/searchbox.tsx";
+import Login from "./assets/components/register/register.tsx";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
-  useMapEvents,
   LayersControl,
+  useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import "./styles/map.css";
-import L from "leaflet";
-import icon from "leaflet/dist/images/marker-icon.png";
-import AddGardenButton from "./components/AddGardenButton";
+import "./index.css";
+import "./styles/Map.css";
+import "./App.css";
+import AddButton from "./assets/components/map/buttons.tsx";
+import './assets/components/constants.tsx'
+import GardenList from "./assets/components/map/gardenList.tsx";
+import FormGardenDrawer from "./assets/components/map/form/formGardenDrawer.tsx";
 
-var myIcon = L.icon({
-  iconUrl: icon,
-  iconAnchor: [22, 94],
-  popupAnchor: [-3, -76],
-});
 
-L.Marker.prototype.options.icon = myIcon;
-
-// LocationMarker is a component that displays the user's location on the map
-function LocationMarker() {
-  const [position, setPosition] = useState(null);
-  const map = useMapEvents({
-    click() {
-      map.locate();
-    },
-    locationfound(e: any) {
-      setPosition(e.latlng);
-      map.flyTo(e.latlng, map.getZoom());
-    },
-  });
-
-  return position === null ? null : (
-    <Marker position={position}>
+// Center the map on the user's location
+function MapCenterUpdater({center, zoom}: {center: {lat: number, lon: number}, zoom: number}) {
+  const map = useMap();
+  useEffect(() => {
+    zoom = 20;
+    map.setView([center.lon, center.lat], zoom, {animate: true, duration: 1});
+  }, [center, map, zoom]);
+  return (
+    <Marker position={[center.lon, center.lat]}>
       <Popup>Vous êtes ici</Popup>
     </Marker>
   );
 }
 
 function App() {
+  const [mapCoordinates, setMapCoordinates] = useState({lat: 3.8767337, lon: 43.6112422});
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isVisibleGardenForm, setIsVisibleGardenForm] = useState(false);
+  
+  // // Change coordinates of the map when the form is changed by the user
+  // // useCallback is used to avoid unnecessary re-renders, and the function is only called when the coordinates change
+  const onCoordinatesChange = (coordinates: {lat: number, lon: number}) => {
+    setMapCoordinates(coordinates);
+  }
+  // Buttons reactions
   const handleAddGarden = () => {
-    console.log("Ajouter un jardin");
+    setIsVisibleGardenForm(true);
   };
+  const handleAccount = () => {
+    setIsLoggedIn(false);
+  };
+  const handleLogin = () => {
+    setIsVisible(true);
+  };
+  
+
   return (
     <div className="app-container">
-        <AddGardenButton
-          onClick={handleAddGarden}
-          className="add-garden-button"
-          label="+ Ajouter mon jardin"
+      <div className="buttons-container fixed top-4 right-4 z-50 flex gap-2">
+        {/* Test if user is logged in */}
+        {!isLoggedIn ? (
+          
+          <AddButton
+          onClick={handleLogin}
+          className="btn btn-primary login-button"
+          label="Se connecter"
         />
+        ):(
+          <>
+          <AddButton
+            onClick={handleAccount}
+            className="btn btn-warning logout-button"
+            label="Se déconnecter"
+          />
+          <AddButton
+            onClick={handleAddGarden}
+            className="btn btn-secondary add-garden-button"
+            label="+ Ajouter son jardin"
+          />
+          </>
+        )}
+      </div>
+        {/* Garden list */}
+        <div className="z-1"><GardenList/></div>
+        {/* Map container */}
         <MapContainer
-          center={[43.6112422, 3.8767337]}
+          center={[mapCoordinates.lon, mapCoordinates.lat]}
           zoom={13}
           scrollWheelZoom={true}
-        >
+          >
+          <MapCenterUpdater center={mapCoordinates} zoom={25}/>
+          {isVisibleGardenForm ? <div className="login-container"> <FormGardenDrawer open={isVisibleGardenForm} onClose={() => setIsVisibleGardenForm(false)} children={<></>} onSubmit={() => {}} setValue={() => {}} onCoordinatesChange={onCoordinatesChange}/> </div> : null}
+          {/* Login component */}
+          {isVisible ? <div className="login-container"> <Login /> </div> : null}
+          {/* Searchbox component */}
+          <SearchBox positionDiv="topleft"/>
+          {/* LayersControl component */}
           <LayersControl position="topright">
-            <LayersControl.Overlay name="Marker with popup">
+            <LayersControl.Overlay name="Marker with popup">  
               <LayersControl.BaseLayer checked name="OSM" >
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -73,10 +113,9 @@ function App() {
               </LayersControl.BaseLayer>
             </LayersControl.Overlay>
           </LayersControl>
-          <LocationMarker />
         </MapContainer>
     </div>
   );
 }
 
-export default App
+export default App;
