@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import MarkerClusterGroup from "react-leaflet-markercluster";
 import SearchBox from "./assets/components/map/searchbox.tsx";
 import Login from "./assets/components/register/register.tsx";
 import {
@@ -8,6 +9,7 @@ import {
   Popup,
   LayersControl,
   useMap,
+  ZoomControl,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "./index.css";
@@ -17,7 +19,9 @@ import AddButton from "./assets/components/map/buttons.tsx";
 import './assets/components/constants.tsx'
 import GardenList from "./assets/components/map/gardenList.tsx";
 import FormGardenDrawer from "./assets/components/map/form/formGardenDrawer.tsx";
-
+import { gardenServices } from "./services/gardenServices.tsx";
+import { Gardens } from "./types/form.interfaces.ts";
+import 'leaflet/dist/leaflet.css'
 
 // Center the map on the user's location
 function MapCenterUpdater({center, zoom}: {center: {lat: number, lon: number}, zoom: number}) {
@@ -28,8 +32,44 @@ function MapCenterUpdater({center, zoom}: {center: {lat: number, lon: number}, z
   }, [center, map, zoom]);
   return (
     <Marker position={[center.lon, center.lat]}>
-      <Popup>Vous êtes ici</Popup>
+      <Popup>Position du jardin</Popup>
     </Marker>
+  );
+}
+
+// Composant séparé pour les marqueurs des jardins
+function GardenMarkers() {
+  const [response, setResponse] = useState<Gardens[]>([]);
+
+  useEffect(() => {
+    gardenServices.getGardens().then((gardens) => {
+      setResponse(gardens);
+    });
+  }, []);
+
+  const gardensWithCoordinates = response.filter((garden: Gardens): boolean => Boolean(garden.address.lat && garden.address.long));
+  
+  return (
+    <MarkerClusterGroup
+      chunkedLoading
+      maxClusterRadius={60}
+      spiderfyOnMaxZoom={true}
+      showCoverageOnHover={true}
+      zoomToBoundsOnClick={true}
+    >
+      {gardensWithCoordinates.map((garden) => {
+        return (
+          <Marker key={garden.id} position={[garden.address.lat, garden.address.long]}>
+            <Popup>
+              <div>
+                <h3>{garden.name}</h3>
+                <p>{garden.description}</p>
+              </div>
+            </Popup>
+          </Marker>
+        );
+      })}
+    </MarkerClusterGroup>
   );
 }
 
@@ -38,9 +78,9 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
   const [isVisibleGardenForm, setIsVisibleGardenForm] = useState(false);
-  
+  const [zoom, setZoom] = useState(10);
+
   // // Change coordinates of the map when the form is changed by the user
-  // // useCallback is used to avoid unnecessary re-renders, and the function is only called when the coordinates change
   const onCoordinatesChange = (coordinates: {lat: number, lon: number}) => {
     setMapCoordinates(coordinates);
   }
@@ -54,6 +94,11 @@ function App() {
   const handleLogin = () => {
     setIsVisible(true);
   };
+  // Handle see information of a garden
+  const handleSeeGarden = (lat: number, long: number) => {
+    setMapCoordinates({lat: lat, lon: long});
+    setZoom(15);
+  }
   
 
   return (
@@ -82,38 +127,51 @@ function App() {
           </>
         )}
       </div>
-        {/* Garden list */}
-        <div className="z-1"><GardenList/></div>
-        {/* Map container */}
-        <MapContainer
-          center={[mapCoordinates.lon, mapCoordinates.lat]}
-          zoom={13}
-          scrollWheelZoom={true}
-          >
-          <MapCenterUpdater center={mapCoordinates} zoom={25}/>
-          {isVisibleGardenForm ? <div className="login-container"> <FormGardenDrawer open={isVisibleGardenForm} onClose={() => setIsVisibleGardenForm(false)} children={<></>} onSubmit={() => {}} setValue={() => {}} onCoordinatesChange={onCoordinatesChange}/> </div> : null}
-          {/* Login component */}
-          {isVisible ? <div className="login-container"> <Login /> </div> : null}
-          {/* Searchbox component */}
-          <SearchBox positionDiv="topleft"/>
-          {/* LayersControl component */}
-          <LayersControl position="topright">
-            <LayersControl.Overlay name="Marker with popup">  
-              <LayersControl.BaseLayer checked name="OSM" >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-              </LayersControl.BaseLayer>
-              <LayersControl.BaseLayer name="Satellite" >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.png"
-                />
-              </LayersControl.BaseLayer>
-            </LayersControl.Overlay>
-          </LayersControl>
-        </MapContainer>
+      {/* Garden list */}
+      <div className="z-1"><GardenList handleSeeGarden={handleSeeGarden}  /></div>
+      {/* Map container */}
+      <MapContainer
+        className="markercluster-map"
+        center={[mapCoordinates.lon, mapCoordinates.lat]}
+        zoom={zoom}
+        scrollWheelZoom={true}
+
+      >
+        <MapCenterUpdater center={mapCoordinates} zoom={25}/>
+        <Marker position={[mapCoordinates.lon, mapCoordinates.lat]}>
+          <Popup>
+            <div>
+              <h3>Vous êtes ici</h3>
+            </div>
+          </Popup>
+        </Marker>
+        {isVisibleGardenForm ? <div className="login-container"> <FormGardenDrawer open={isVisibleGardenForm} onClose={() => setIsVisibleGardenForm(false)} children={<></>} onSubmit={() => {}} setValue={() => {}} onCoordinatesChange={onCoordinatesChange}/> </div> : null}
+        {/* Login component */}
+        {isVisible ? <div className="login-container"> <Login /> </div> : null}
+        {/* Searchbox component */}
+        <SearchBox positionDiv="topleft"/>
+        {/* LayersControl component */}
+        <LayersControl position="topright">
+            {/* OSM layer */}
+            <LayersControl.BaseLayer checked name="OSM">
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+              />
+            </LayersControl.BaseLayer>
+
+            {/* Satellite layer */}
+            <LayersControl.BaseLayer name="Satellite">
+              <TileLayer
+                url="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.png"
+                attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+              />
+            </LayersControl.BaseLayer>
+        </LayersControl>
+        
+        {/* Marker cluster for gardens */}
+        <GardenMarkers />
+      </MapContainer>
     </div>
   );
 }

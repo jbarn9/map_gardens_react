@@ -1,3 +1,5 @@
+import { Coordinates } from "./form.types";
+
 export interface Networks {
   id: string;
   name: string;
@@ -27,9 +29,26 @@ export interface Gardens {
   updatedAt: string;    
   networks: Networks;
   networksId: string;
-  adresseId: string;
+  addressId: string;
   gardenCategoryId: string;
   gardenCategory: GardenCategories;
+  address: {
+    id: string;
+    street: string;
+    lat: number;
+    long: number;
+    citiesId: string;
+    cities: {
+      id: string;
+      name: string;
+      post: string;
+      area: string;
+      dept: string;
+      createdAt: string;
+      updatedAt: string;
+      countryId: string;
+    };
+  };
 } 
 
 export interface GardenCategories {

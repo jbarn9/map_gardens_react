@@ -4,7 +4,7 @@ import useMultistepForm from "../multistepForm";
 import { Input } from "./formInputs";
 import { gardenServices } from "../../../../services/gardenServices";
 import { Address, Networks } from "../../../../types/form.interfaces";
-import { GardenFormProps, GardenCategories, GardenTypes, propType, CoordinatesFormProps, Coordinates } from "../../../../types/form.types";
+import { GardenFormProps, GardenCategories, GardenTypes, propType, CoordinatesFormProps } from "../../../../types/form.types";
 
 function CoordinatesForm({formData, handleChange, onCoordinatesChange}: CoordinatesFormProps ) { 
     const [postcode, setPostcode] = useState(formData.postcode);
@@ -37,6 +37,8 @@ function CoordinatesForm({formData, handleChange, onCoordinatesChange}: Coordina
             const fetchAddress = async () => {
                 await gardenServices.searchAddress(street, postcode).then((coordinatesValueStreet) => {
                     setCoordinatesValueStreet(coordinatesValueStreet);
+                    console.log('coordinates street',coordinatesValueStreet);
+                    
                 });                
             }
             fetchAddress();
@@ -45,8 +47,9 @@ function CoordinatesForm({formData, handleChange, onCoordinatesChange}: Coordina
             throw error;
         }
     }, [street])
+
+    // Handle coordinates change to send them to the map (app.tsx)
     const handleCoordinatesChange = (lat: number, lon: number) => {
-        console.log('test', lat, lon);
         onCoordinatesChange({lat: lat, lon: lon});
     }
     // Handle suggestion click - set values of the form
@@ -117,7 +120,7 @@ function CoordinatesForm({formData, handleChange, onCoordinatesChange}: Coordina
                 {coordinatesValueStreet && coordinatesValueStreet.length > 0 && (
                     <ul id="street-list" role="listbox" style={{width: 'clamp(3rem, 20rem, 100%)', height: 'fit-content', overflow: 'auto', padding: '10px', backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '4px'}}>
                         {coordinatesValueStreet.map((stt: Address, index: number) => (
-                            <li key={index} onClick={() => handleSuggestionClick(stt, 'street')} role="option">{stt.label}</li>
+                            <li key={index} onClick={() => handleSuggestionClick(stt, 'street')} role="option">{stt.name}</li>
                         ))}
                     </ul> 
                 )}
@@ -308,7 +311,7 @@ function FormGardenDrawer({open, onClose, onCoordinatesChange}: propType) {
     }
 
     return (
-        <Drawer.Root open={open} onOpenChange={onClose} modal={false}>
+        <Drawer.Root open={open} onOpenChange={onClose} modal={false} direction="right" >
             <Drawer.Portal>
                 <Drawer.Overlay className="fixed inset-0 bg-black/20" />            
                 {error && (
@@ -322,12 +325,12 @@ function FormGardenDrawer({open, onClose, onCoordinatesChange}: propType) {
                         <span>Le jardin a été créé avec succès !</span>
                     </div>
                 )}
-                <Drawer.Content className="bg-white flex flex-col fixed bottom-0 left-0 right-0 max-h-[82vh] rounded-t-[10px]"> 
+                <Drawer.Content className="bg-white flex absolute flex-col top-0 bottom-0 right-0 max-h-[100vh] rounded-t-[10px] lg:max-w-fit w-fit"> 
                     <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
                         <button type="button" className="absolute top-2 mx-2 py-1 px-2 rounded-md border btn btn-outline btn-primary z-50" onClick={onClose}>X</button>
                     </div>
                     <div className="max-w-md w-full mx-auto overflow-auto p-4 rounded-t-[10px]">
-                    <Drawer.Handle />               
+                    {/* form Add Garden */}
                     <form onSubmit={handleSubmit} className="space-y-4" method="POST">
                         <ul className="steps w-full">
                             <li className={`step ${currentStepIndex >= 0 ? 'step-primary' : ''}`}>Etape 1</li>

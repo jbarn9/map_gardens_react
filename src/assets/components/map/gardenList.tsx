@@ -4,16 +4,20 @@ import { faEye, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { Gardens } from '../../../types/form.interfaces';
 import { gardenServices } from '../../../services/gardenServices';
 
-export default function GardenList() {
+export default function GardenList({handleSeeGarden}: {handleSeeGarden: (lat: number, long: number) => void}) {
     const [response, setResponse] = useState<Gardens[]>([]);
-    
+
     useEffect(() => {
         gardenServices.getGardens().then((gardens) => setResponse(gardens));
     }, []);
 
-  return (
-    <div className='fixed carousel max-width'>
-        {response.length > 0 ? (
+    const getLarLongSeeGarden = (lat: number, long: number) => {
+       handleSeeGarden(long, lat);
+    }
+
+    return (
+        <div className='fixed carousel max-width'>
+            {response.length > 0 ? (
             response.map((garden) => (
             <div className="carousel-item md:w-1/4">
                 <div className="card bg-base-100 image-full w-100 shadow-sm">
@@ -44,7 +48,9 @@ export default function GardenList() {
                         <div className="card-actions self-end">
                             <div className='flex justify-between'>
                                 <a><FontAwesomeIcon icon={faPhone}/></a>
-                                <button className="btn btn-primary">Voir</button>
+                                <button className="btn btn-primary" onClick={() => {
+                                    getLarLongSeeGarden(garden.address.lat, garden.address.long);
+                                }}>Voir</button>
                             </div>
                         </div>
                     </div>
