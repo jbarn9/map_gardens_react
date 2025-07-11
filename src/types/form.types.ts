@@ -1,21 +1,11 @@
-export type propType = {
-    open: boolean;
-    onClose: () => void;
-    children: React.ReactNode;
-    onSubmit: (data: any) => void;
-    setValue: (name: string, value: string | number) => void;
-    onCoordinatesChange: (coordinates:{lat:number, lon:number}) => void;
-}
-
 export type GardenFormProps = {
     formData: {
         name: string;
-        network: string;
-        category: string;
+        networkId: string;
+        gardenCategoryId: string;
         type: string;
         parcels: number;
-        description: string;
-
+        description: string;    
     };
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
     setFormData: (data: any) => void;
@@ -36,15 +26,18 @@ export type Cities = {
 
 export type CoordinatesFormProps = {
     formData: {
-      label_street: string;
+      street: string;
       postcode: string;
       city: string;
       country: string;
-      coordinates: Coordinates;
+      lat: number;
+      long: number;
+      cityId?: string;
     };
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     setFormData: (data: any) => void;
-    onCoordinatesChange: (coordinates:Coordinates) => void;
+    onCoordinatesChange: (lat: number, long: number) => void;
+    onLabelStreetChange: (street: string) => void;
   };
 
   export type Coordinates = {

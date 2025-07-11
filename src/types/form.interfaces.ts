@@ -77,3 +77,12 @@ export interface InputautocompleteProps {
   postcode: string;
 }
 
+export interface propType {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: any) => void;
+  onCoordinatesChange: (lat: number, long: number) => void;
+  onLabelStreetChange: (label_street: string) => void;
+  gardenDetails: string | null;
+} 
+

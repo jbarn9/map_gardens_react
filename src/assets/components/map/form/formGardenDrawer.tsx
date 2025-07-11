@@ -3,19 +3,17 @@ import React, { useEffect, useState } from "react";
 import useMultistepForm from "../multistepForm";
 import { Input } from "./formInputs";
 import { gardenServices } from "../../../../services/gardenServices";
-import { Address, Networks } from "../../../../types/form.interfaces";
-import { GardenFormProps, GardenCategories, GardenTypes, propType, CoordinatesFormProps } from "../../../../types/form.types";
+import { Address, Networks, Gardens } from "../../../../types/form.interfaces";
+import { GardenFormProps, GardenCategories, GardenTypes, CoordinatesFormProps } from "../../../../types/form.types";
+import { propType } from "../../../../types/form.interfaces";
 
-function CoordinatesForm({formData, handleChange, onCoordinatesChange}: CoordinatesFormProps ) { 
+function CoordinatesForm({formData, handleChange, onCoordinatesChange, onLabelStreetChange}: CoordinatesFormProps ) { 
     const [postcode, setPostcode] = useState(formData.postcode);
     const [coordinatesValue, setCoordinatesValue] = useState<Address[] | null>(null);
     const [coordinatesValueStreet, setCoordinatesValueStreet] = useState<Address[] | null>(null);
-    const [city, setCity] = useState(formData.city);
-    const [country, setCountry] = useState(formData.country);
-    const [lat, setLat] = useState(formData.coordinates.lat);
-    const [lon, setLon] = useState(formData.coordinates.lon);
-    const [street, setStreet] = useState(formData.label_street);
-
+    const [streetName, setStreetName] = useState(formData.street);
+    const [coordinates, setCoordinates] = useState({ lon: formData.long, lat: formData.lat});
+    const [error, setError] = useState<String | null>(null);
     
     useEffect(() => {
         try {
@@ -27,53 +25,48 @@ function CoordinatesForm({formData, handleChange, onCoordinatesChange}: Coordina
             }
             fetchAddress();
         } catch (error) {
+            setError(error as String);
             console.error('Erreur dans le contrôleur:', error);
-            throw error;
         }
     }, [postcode])
 
     useEffect(() => {
         try {
             const fetchAddress = async () => {
-                await gardenServices.searchAddress(street, postcode).then((coordinatesValueStreet) => {
+                await gardenServices.searchAddress(streetName, postcode).then((coordinatesValueStreet) => {
                     setCoordinatesValueStreet(coordinatesValueStreet);
-                    console.log('coordinates street',coordinatesValueStreet);
                     
                 });                
             }
             fetchAddress();
         } catch (error) {
+            setError(error as String);
             console.error('Erreur dans le contrôleur:', error);
-            throw error;
         }
-    }, [street])
+    }, [streetName])
 
     // Handle coordinates change to send them to the map (app.tsx)
-    const handleCoordinatesChange = (lat: number, lon: number) => {
-        onCoordinatesChange({lat: lat, lon: lon});
+    const handleCoordinatesChange = (lon: number, lat: number) => {
+        onCoordinatesChange(lon, lat);
     }
     // Handle suggestion click - set values of the form
     const handleSuggestionClick = (value: any, type: string) => { 
+        formData.street = value.name;
         if(type === 'city'){
             setCoordinatesValue(null);
             formData.postcode = value.postcode;
-            setPostcode(value.postcode);
             formData.city = value.city;
-            setCity(value.city);
-            formData.country = 'France';
-            setCountry('France');
+            formData.country = "France";
+            formData.cityId = value.id || ''; // Ajout du cityId
         }else if(type === 'street'){
+            onLabelStreetChange(value.name);
             setCoordinatesValueStreet(null);
-            formData.label_street = value.label;
-            setStreet(value.name);
-            formData.coordinates = {lat: value.lat, lon: value.lon};
-            setLat(value.lat);
-            setLon(value.lon);
-            handleCoordinatesChange(value.lat, value.lon);
-        }
+            setCoordinates({lon: value.lon, lat: value.lat});            
+            formData.lat = value.lat;
+            formData.long = value.lon;
+            handleCoordinatesChange(value.lon, value.lat);
+        }        
     }
-
-   
 
     return (
         <>
@@ -87,16 +80,16 @@ function CoordinatesForm({formData, handleChange, onCoordinatesChange}: Coordina
                 id="postcode"
                 className="input"
                 placeholder="Code postal"
-                value={postcode}                                  
+                value={formData.postcode}                                  
                 aria-autocomplete="list"
                 aria-controls="postcode-list"
                 list="postcode-list"
-                onChange={(e) => setPostcode(e.target.value)}
+                onChange={(e) => {setPostcode(e.target.value); handleChange(e)}}
             />
             {coordinatesValue && coordinatesValue.length > 0 && (
                 <ul id="postcode-list" role="listbox" style={{width: 'clamp(3rem, 20rem, 100%)', height: 'fit-content', overflow: 'auto', padding: '10px', backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '4px'}}>
                     {coordinatesValue.map((cityValue: Address, index: number) => (
-                        <li key={index} onClick={() => handleSuggestionClick(cityValue, 'city')} role="option">{cityValue.city} - France</li>
+                        <li key={index} onClick={() => {handleSuggestionClick(cityValue, 'city')}}  role="option">{cityValue.city} - France</li>
                     ))}
                 </ul> 
             )}
@@ -107,15 +100,15 @@ function CoordinatesForm({formData, handleChange, onCoordinatesChange}: Coordina
             <div className="input-container">
                 <input 
                     type="text"
-                    name="label_street"
+                    name="street"
                     id="label_street"
                     className="input"
                     placeholder="Adresse du jardin"
-                    value={street}                                  
+                    value={formData.street}    
                     aria-autocomplete="list"
                     aria-controls="street-list"
                     list="street-list"
-                    onChange={(e) => setStreet(e.target.value)}
+                    onChange={(e) => {setStreetName(e.target.value); handleChange(e)}}
                 />
                 {coordinatesValueStreet && coordinatesValueStreet.length > 0 && (
                     <ul id="street-list" role="listbox" style={{width: 'clamp(3rem, 20rem, 100%)', height: 'fit-content', overflow: 'auto', padding: '10px', backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '4px'}}>
@@ -125,10 +118,10 @@ function CoordinatesForm({formData, handleChange, onCoordinatesChange}: Coordina
                     </ul> 
                 )}
             </div>
-        <Input name="city" label="Ville" placeholder="Ville du jardin" onChange={handleChange} className="floating-label" type="text" value={city}/> 
-        <Input name="country" label="Pays" value={country} onChange={handleChange} placeholder="Pays du jardin" type="text" className="floating-label" />
-        <Input name="lat" label="Latitude" value={lat} onChange={e => onCoordinatesChange({lat: lat, lon: Number(e.target.value)})} placeholder="Latitude du jardin" type="number" className="floating-label" />
-        <Input name="Long" label="Longitude" value={lon} onChange={e => onCoordinatesChange({lat: lat, lon: Number(e.target.value)})} placeholder="Longitude du jardin" type="number" className="floating-label" />
+        <Input name="city" label="Ville" placeholder="Ville du jardin" onChange={handleChange} className="floating-label" type="text" value={formData.city}/> 
+        <Input name="country" label="Pays" value={formData.country} onChange={handleChange} placeholder="Pays du jardin" type="text" className="floating-label" />
+        <Input name="lat" label="Latitude" value={formData.lat} onChange={e => onCoordinatesChange(Number(e.target.value), formData.long)} placeholder="Latitude du jardin" type="number" className="floating-label" />
+        <Input name="long" label="Longitude" value={formData.long} onChange={e => onCoordinatesChange(formData.lat, Number(e.target.value))} placeholder="Longitude du jardin" type="number" className="floating-label" />
         </>     
     )
 }
@@ -160,10 +153,10 @@ function GardenForm({formData, handleChange, setFormData}: GardenFormProps) {
             <fieldset>
                 <legend>Réseau auquel appartient le jardin</legend>
                 <select 
-                    name="network" 
+                    name="networkId" 
                     className="select"
-                    value={formData.network}
-                    onChange={(e) => setFormData({ ...formData, network: e.target.value })}
+                    value={formData.networkId}
+                    onChange={handleChange}
                 >
                     <option value="" disabled>Choisir un réseau</option>
                     {networks.map((network) => (
@@ -174,10 +167,10 @@ function GardenForm({formData, handleChange, setFormData}: GardenFormProps) {
             <fieldset className="fieldset">
                 <legend className="fieldset-legend">Catégorie de jardin</legend>
                 <select 
-                    name="category" 
+                    name="gardenCategoryId" 
                     className="select"
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    value={formData.gardenCategoryId}
+                    onChange={handleChange}
                 >
                     <option value="" disabled>Choisir une catégorie</option>
                     {gardenCategories.map((category) => (
@@ -192,7 +185,7 @@ function GardenForm({formData, handleChange, setFormData}: GardenFormProps) {
                     name="type" 
                     className="select"
                     value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    onChange={handleChange}
                 >
                     <option value="" disabled>Choisir un type</option>
                     {gardenTypes.map((type) => (
@@ -207,7 +200,7 @@ function GardenForm({formData, handleChange, setFormData}: GardenFormProps) {
                 className="floating-label"
                 type="number"
                 placeholder="Nombre de parcelles en production"
-                onChange={(e) => setFormData({ ...formData, parcels: e.target.value })}
+                onChange={handleChange}
             />
             <textarea 
                 className="textarea" 
@@ -222,81 +215,183 @@ function GardenForm({formData, handleChange, setFormData}: GardenFormProps) {
     )
 }
 
+function GardenDetails({gardenDetails, onClose}: {gardenDetails: string | null, onClose: () => void}) {
+    const [garden, setGarden] = useState<Gardens | null>(null);
+    useEffect(() => {
+        console.log(gardenDetails);
+        gardenServices.getGardenDetails(gardenDetails as string).then((garden) => {
+            if(garden.success) {
+                setGarden(garden.data);                
+            } else {
+                console.error('Error fetching gardens:', garden.error);
+            }
+        });
+    }, [gardenDetails]);    
 
-function FormGardenDrawer({open, onClose, onCoordinatesChange}: propType) {
-    const dataFields = {
-        label_street: "",
-        postcode: "",
-        city: "",
-        country: "",
-        coordinates: {lat: 0, lon: 0}
-    }
-    const [data, setData] = useState(dataFields);
+    return (
+        <>
+            <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+                <button type="button" className="absolute top-2 mx-2 py-1 px-2 rounded-md border btn btn-outline btn-primary z-50" onClick={onClose}>X</button>
+            </div>
+            {/* Form Add Garden */}
+            <div className="max-w-md w-full mx-auto overflow-auto p-4 rounded-t-[10px]">
+                <Drawer.Title className="font-medium text-gray-900 mt-8">Détails du jardin</Drawer.Title>
+                <Drawer.Description className="leading-6 mt-2 text-gray-600">
+                    <p>{garden?.name}</p>
+                    <p>{garden?.description}</p>
+                </Drawer.Description>
+            </div>
+        </>
+    )
+}
 
+function FormAddGarden({onClose, onCoordinatesChange, onLabelStreetChange, onSubmit, gardenDetails}: propType) {
+    const [name, setName] = useState("");
+    const [network, setNetwork] = useState("");
+    const [category, setCategory] = useState("");
+    const [type, setType] = useState("");
+    const [parcels, setParcels] = useState(0);
+    const [description, setDescription] = useState("");
+    const [street, setStreet] = useState("");
+    const [postcode, setPostcode] = useState("");
+    const [city, setCity] = useState("");
+    const [country, setCountry] = useState("");
+    const [coordinates, setCoordinates] = useState({lon: 0, lat: 0});  
+
+    // Data for the first step of the form
     const [formData, setFormData] = useState({
-        name: "",
-        network: "",
-        category: "",
-        type: "",
-        parcels: 0,
-        description: "",
-        label: "",
-        cityId: "",  
-        coordinates: {}
+        name: name,
+        networkId: network,
+        gardenCategoryId: category,
+        type: type,
+        parcels: parcels,
+        description: description
     })
-    
+
+    // Data for the second step of the form
+    const [formDataCoordinates, setFormDataCoordinates] = useState({
+        street: street,
+        postcode: postcode,
+        city: city,
+        country: country,
+        lat: coordinates.lat,
+        long: coordinates.lon,
+        cityId: '' // Ajout du champ cityId requis par le backend
+    })
+    // dataFields is the initial state of the form
+    const allFormData = {
+        ...formData,
+        ...formDataCoordinates
+    };
     // Handle change of the form
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        if (dataFields.hasOwnProperty(e.target.name)) {
-            setData((prev) => ({
-                ...prev,
-                [e.target.name]: e.target.value
-            }));
-        }else{
-            setFormData((prevalue) => {
-                return {
-                    ...prevalue,
-                    [e.target.name]: e.target.value
-                }      
-            })
-        }
+        switch (e.target.name) {
+            case 'name':
+            setName(e.target.value);
+            setFormData({...formData, name: e.target.value});
+            break;
+        case 'networkId':
+            setNetwork(e.target.value);
+            setFormData({...formData, networkId: e.target.value});
+            break;
+        case 'gardenCategoryId':
+            setCategory(e.target.value);
+            setFormData({...formData, gardenCategoryId: e.target.value});
+            break;
+        case 'type':
+            setType(e.target.value);
+            setFormData({...formData, type: e.target.value});
+            break;
+        case 'parcels':
+            setParcels(Number(e.target.value));
+            setFormData({...formData, parcels: Number(e.target.value)});
+            break;
+        case 'description':
+            setDescription(e.target.value);
+            setFormData({...formData, description: e.target.value});
+            break;
+        case 'street':
+            setStreet(e.target.value);
+            setFormDataCoordinates({...formDataCoordinates, street: e.target.value});
+            break;
+        case 'postcode':
+            setPostcode(e.target.value);
+            setFormDataCoordinates({...formDataCoordinates, postcode: e.target.value});
+            break;
+        case 'city':
+            setCity(e.target.value);
+            setFormDataCoordinates({...formDataCoordinates, city: e.target.value});
+            break;
+        case 'country':
+            setCountry(e.target.value);
+            setFormDataCoordinates({...formDataCoordinates, country: e.target.value});
+            break;
+        case 'cityId':
+            setFormDataCoordinates({...formDataCoordinates, cityId: e.target.value});
+            break;
+        case 'lat':
+            setCoordinates({...coordinates, lat: Number(e.target.value)});
+            setFormDataCoordinates({...formDataCoordinates, lat: Number(e.target.value)});
+            break;
+        case 'long':
+            setCoordinates({...coordinates, lon: Number(e.target.value)});
+            setFormDataCoordinates({...formDataCoordinates, long: Number(e.target.value)});
+            break;
+        default:
+            break;
+        }           
     }
     const { currentStepIndex, step, back, next, isFirstStep, isLastStep} = useMultistepForm(
         [
             <GardenForm formData={formData} setFormData={setFormData} handleChange={handleChange} />, 
-            <CoordinatesForm formData={data} setFormData={setData} handleChange={handleChange} onCoordinatesChange={onCoordinatesChange} />
-        ]);
+            <CoordinatesForm formData={formDataCoordinates} setFormData={setFormDataCoordinates} handleChange={handleChange} onCoordinatesChange={onCoordinatesChange} onLabelStreetChange={onLabelStreetChange} />
+    ]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<String | null>(null);
     const [success, setSuccess] = useState(false);
+    const [message, setMessage] = useState<String | null>(null);
 
+    // Handle submit of the form
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         setError(null);
         setSuccess(false);
+        
+        // Create the garden
         try {
             const response = await fetch('http://localhost:3001/gardens', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(allFormData),
             });
+
+            console.log('Status de la requête:', response.status);
+            console.log('Status Text:', response.statusText);
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to create garden');
+                throw new Error(`Erreur ${response.status}: ${errorData.message || 'Failed to create garden'}`);
             }
-            await response.json();
+            
+            const data = await response.json();
             setSuccess(true);
+            
             
         } catch (error) {
             setError(error as String);
         } finally {
             setIsSubmitting(false);
         }
+        useEffect(() => {
+            setMessage(success ? 'Le jardin a été créé avec succès !' : 'ERREUR: Le jardin n\'a pas pu être créé :/ veuillez réessayer !');
+            if(success) {
+                onClose();
+            }
+        }, [success, error]);
         
     };
     const handleBack = (e: React.MouseEvent) => {
@@ -309,46 +404,64 @@ function FormGardenDrawer({open, onClose, onCoordinatesChange}: propType) {
         e.stopPropagation();
         next();
     }
+    return (
+        <>
+        {/* Error and success messages */}
+        {success || error && (
+            <div className={`alert ${success ? 'alert-success' : 'alert-error'} mb-4`}>
+                <span>{message}</span>
+            </div>
+        )}
+        {/* Close button */}
+        <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="absolute top-2 mx-2 py-1 px-2 rounded-md border btn btn-outline btn-primary z-50" onClick={onClose}>X</button>
+        </div>
+        {/* Form Add Garden */}
+        <div className="max-w-md w-full mx-auto overflow-auto p-4 rounded-t-[10px]">
+        <form onSubmit={handleSubmit} className="space-y-4" method="POST">
+            <ul className="steps w-full">
+                <li className={`step ${currentStepIndex >= 0 ? 'step-primary' : ''}`}>Etape 1</li>
+                <li className={`step ${currentStepIndex >= 1 ? 'step-primary' : ''}`}>Etape 2</li>
+            </ul>
+            <Drawer.Title className="font-medium text-gray-900 mt-8">Nouveau jardin</Drawer.Title>
+            <Drawer.Description className="leading-6 mt-2 text-gray-600">
+            Remplissez les champs ci-dessous pour créer votre nouveau jardin.
+            </Drawer.Description>
+            <fieldset className="fieldset border border-base-300 p-4 rounded-box">
+                {step}
+                <div className="relative flex flex-row gap-2">
+                    {!isFirstStep && <button type="button" className="btn btn-outline btn-primary" onClick={handleBack}>Précedent</button>}
+                    {isLastStep ? <button type="submit" className="btn btn-primary mt-4" disabled={isSubmitting}>Créer le jardin</button> : <button className="btn btn-primary" onClick={handleNext}>Suivant</button>}
+                </div>
+            </fieldset>
+        </form>
+        </div>
+
+        </>
+    )
+}
+
+function FormGardenDrawer({open, onClose, onCoordinatesChange, onLabelStreetChange, onSubmit, gardenDetails}: propType) {
+    // Handle submit of the form
+    const onSubmitEvent = (data: any) => {
+        onSubmit(data);
+    }
 
     return (
         <Drawer.Root open={open} onOpenChange={onClose} modal={false} direction="right" >
             <Drawer.Portal>
                 <Drawer.Overlay className="fixed inset-0 bg-black/20" />            
-                {error && (
-                    <div className="alert alert-error mb-4">
-                        <span>{error}</span>
-                    </div>
-                )}
-                
-                {success && (
-                    <div className="alert alert-success mb-4">
-                        <span>Le jardin a été créé avec succès !</span>
-                    </div>
-                )}
-                <Drawer.Content className="bg-white flex absolute flex-col top-0 bottom-0 right-0 max-h-[100vh] rounded-t-[10px] lg:max-w-fit w-fit"> 
-                    <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-                        <button type="button" className="absolute top-2 mx-2 py-1 px-2 rounded-md border btn btn-outline btn-primary z-50" onClick={onClose}>X</button>
-                    </div>
-                    <div className="max-w-md w-full mx-auto overflow-auto p-4 rounded-t-[10px]">
-                    {/* form Add Garden */}
-                    <form onSubmit={handleSubmit} className="space-y-4" method="POST">
-                        <ul className="steps w-full">
-                            <li className={`step ${currentStepIndex >= 0 ? 'step-primary' : ''}`}>Etape 1</li>
-                            <li className={`step ${currentStepIndex >= 1 ? 'step-primary' : ''}`}>Etape 2</li>
-                        </ul>
-                        <Drawer.Title className="font-medium text-gray-900 mt-8">Nouveau jardin</Drawer.Title>
-                        <Drawer.Description className="leading-6 mt-2 text-gray-600">
-                        Remplissez les champs ci-dessous pour créer votre nouveau jardin.
-                        </Drawer.Description>
-                        <fieldset className="fieldset border border-base-300 p-4 rounded-box">
-                            {step}
-                            <div className="relative flex flex-row gap-2">
-                                {!isFirstStep && <button type="button" className="btn btn-outline btn-primary" onClick={handleBack}>Précedent</button>}
-                                {isLastStep ? <button type="submit" className="btn btn-primary mt-4" disabled={isSubmitting}>Créer le jardin</button> : <button className="btn btn-primary" onClick={handleNext}>Suivant</button>}
-                            </div>
-                        </fieldset>
-                    </form>
-                    </div>
+                    
+                <Drawer.Content className="bg-white flex fixed flex-col top-0 bottom-0 right-0 max-h-[100vh] z-10 rounded-t-[10px] lg:max-w-fit w-fit"> 
+                    {gardenDetails ? <GardenDetails gardenDetails={gardenDetails} onClose={onClose} /> : <FormAddGarden 
+                        open={open}
+                        onClose={onClose}
+                        onCoordinatesChange={onCoordinatesChange}
+                        onLabelStreetChange={onLabelStreetChange}
+                        onSubmit={onSubmitEvent}
+                        gardenDetails={gardenDetails}
+                    />}
+
                 </Drawer.Content>
             </Drawer.Portal>
         </Drawer.Root>

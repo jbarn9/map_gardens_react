@@ -1,6 +1,11 @@
 import { Address, Gardens } from "../types/form.interfaces";
 
 export const gardenServices = {
+    /**
+     * NETWORK SERVICES
+     * @returns {Promise<Networks[]>}
+     */
+    // Get all networks
     getNetworks: async () => {
         try {
             const response = await fetch('http://localhost:3001/networks/all');
@@ -10,15 +15,38 @@ export const gardenServices = {
             console.error('Error:', error);
         }
     },
+    /**
+     * GARDEN SERVICES
+     * @returns {Promise<Gardens[]>}
+     */
+    // Get all gardens
     getGardens: async () => {
         try {
             const response = await fetch('http://localhost:3001/gardens/all');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+            }
+            
             const data = await response.json();
-            return data.gardens;
+            return { success: true, data: data.gardens };
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error fetching gardens:', error);
+            return { success: false, error: error instanceof Error ? error.message : 'Erreur inconnue' };
         }
     },
+    // Get garden details
+    getGardenDetails: async (id: string) => {
+        try {
+            const response = await fetch(`http://localhost:3001/gardens/${id}`);
+            const data = await response.json();
+            return data.garden;
+        } catch (error) {   
+            console.error('Error fetching garden details:', error);
+            return { success: false, error: error instanceof Error ? error.message : 'Erreur inconnue' };
+        }
+    },
+    // Get all garden types
     getGardenTypes: async () => {
         try {
             const response = await fetch('http://localhost:3001/garden-types/all');
@@ -28,6 +56,7 @@ export const gardenServices = {
             console.error('Error:', error);
         }
     },
+    // Get all garden categories
     getGardenCategories: async () => {
         try {
             const response = await fetch('http://localhost:3001/garden-categories/all');
@@ -37,16 +66,6 @@ export const gardenServices = {
             console.error('Error:', error);
         }
     },
-    getCities: async () => {
-        try {
-            const response = await fetch('http://localhost:3001/cities/all');
-            const data = await response.json();
-            return data.cities;
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    },
-
     // Create a new garden
     createGarden: async (garden: Gardens) => {
         try {
@@ -56,6 +75,20 @@ export const gardenServices = {
             });
             const data = await response.json();
             return data.garden;
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    },
+    /**
+     * CITY SERVICES
+     * @returns {Promise<Cities[]>}
+     */
+    // Get all cities
+    getCities: async () => {
+        try {
+            const response = await fetch('http://localhost:3001/cities/all');
+            const data = await response.json();
+            return data.cities;
         } catch (error) {
             console.error('Error:', error);
         }
@@ -83,7 +116,11 @@ export const gardenServices = {
             console.error('Error:', error);
         }
     },
-
+    /**
+     * ADDRESS SERVICES
+     * @returns {Promise<Address[]>}
+     */
+    // Search by postal code
     searchPostalCode : async (postcode: string) => {
         try {
             const response = await fetch(`http://localhost:3001/address/searchByPostcode?q=${encodeURIComponent(postcode)}&limit=2`);

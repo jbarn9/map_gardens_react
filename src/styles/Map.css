@@ -70,6 +70,12 @@
     z-index: 1000;
     cursor: pointer;
 }
+.add-button.reset-position-button {
+    top: 17px;
+    left: 10px!important;
+    z-index: 1000;
+    cursor: pointer;
+}
 .login-button, .logout-button {
     right: 145px;
 }
@@ -93,4 +99,10 @@ h1 {
     top: 50%;
     transform: translate(-50%, -50%);
     z-index: 1500;
+}
+
+.network-actions a {
+    color: white!important;
+    font-size: 1.1rem;
+    gap: 10px;
 }
